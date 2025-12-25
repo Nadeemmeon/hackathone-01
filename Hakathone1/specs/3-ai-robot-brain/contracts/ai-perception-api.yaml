@@ -1,0 +1,140 @@
+# AI Perception API Contract
+
+## Purpose
+This contract defines the API endpoints for AI perception and navigation systems in the NVIDIA Isaac ecosystem. This would be used if there's a backend system for managing perception models, navigation plans, or integration with Isaac services.
+
+## Base URL
+`https://api.ai-robot-brain.com/v1`
+
+## Endpoints
+
+### Get Perception Model
+```
+GET /perception-models/{model-id}
+```
+
+**Description**: Retrieve configuration and details of a perception model trained with synthetic data.
+
+**Path Parameters**:
+- `model-id` (string): The identifier for the perception model
+
+**Response**:
+```json
+{
+  "id": "object-detector-v1",
+  "name": "Object Detection Model",
+  "type": "object_detection",
+  "description": "Trained with NVIDIA Isaac Sim synthetic data",
+  "inputType": "image",
+  "outputType": "bounding_boxes",
+  "trainingData": {
+    "source": "synthetic",
+    "platform": "isaac_sim",
+    "environments": ["indoor", "outdoor", "warehouse"],
+    "sampleCount": 100000
+  },
+  "accuracyMetrics": {
+    "mAP": 0.85,
+    "inferenceTime": 0.02
+  },
+  "supportedSensors": ["rgb_camera", "depth_camera"]
+}
+```
+
+### Get Navigation Plan
+```
+POST /navigation/plan
+```
+
+**Description**: Generate a navigation plan for a humanoid robot given start and goal positions.
+
+**Request Body**:
+```json
+{
+  "robotType": "humanoid",
+  "startPose": {
+    "x": 0.0,
+    "y": 0.0,
+    "theta": 0.0
+  },
+  "goalPose": {
+    "x": 5.0,
+    "y": 3.0,
+    "theta": 0.0
+  },
+  "mapId": "office_map_01",
+  "plannerType": "nav2"
+}
+```
+
+**Response**:
+```json
+{
+  "planId": "plan-12345",
+  "status": "success",
+  "path": [
+    {"x": 0.0, "y": 0.0, "theta": 0.0},
+    {"x": 1.0, "y": 0.5, "theta": 0.1},
+    {"x": 2.0, "y": 1.0, "theta": 0.2},
+    // ... more waypoints
+    {"x": 5.0, "y": 3.0, "theta": 0.0}
+  ],
+  "planningTime": 0.15,
+  "pathLength": 6.2
+}
+```
+
+### Get SLAM Map
+```
+GET /slam/maps/{map-id}
+```
+
+**Description**: Retrieve a map created by Visual SLAM system.
+
+**Path Parameters**:
+- `map-id` (string): The identifier for the SLAM map
+
+**Response**:
+```json
+{
+  "id": "map-office-01",
+  "name": "Office Environment Map",
+  "createdBy": "visual_slam",
+  "resolution": 0.05,
+  "origin": {
+    "x": -10.0,
+    "y": -10.0,
+    "z": 0.0
+  },
+  "dimensions": {
+    "width": 400,
+    "height": 400
+  },
+  "data": "base64_encoded_map_data",
+  "features": {
+    "keypoints": 1250,
+    "landmarks": 340
+  },
+  "coverage": 0.85
+}
+```
+
+## Error Responses
+
+All endpoints return standard error responses:
+
+```json
+{
+  "error": {
+    "code": "MODEL_NOT_FOUND",
+    "message": "The requested perception model was not found",
+    "details": "Model with id 'nonexistent-model' does not exist"
+  }
+}
+```
+
+## Authentication
+Some endpoints may require authentication using Bearer tokens in the Authorization header:
+```
+Authorization: Bearer {access-token}
+```

@@ -1,0 +1,188 @@
+openapi: 3.0.0
+info:
+  title: Vision-Language-Action (VLA) API
+  version: 1.0.0
+  description: API for the Vision-Language-Action integration system
+
+paths:
+  /api/voice/process:
+    post:
+      summary: Process voice command
+      description: Accepts audio data and converts it to text command
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - audio_data
+                - user_id
+              properties:
+                audio_data:
+                  type: string
+                  description: Base64 encoded audio data
+                user_id:
+                  type: string
+                  description: User identifier
+      responses:
+        '200':
+          description: Successfully processed voice command
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  command_text:
+                    type: string
+                    description: Recognized text from speech
+                  confidence:
+                    type: number
+                    format: float
+                    minimum: 0.0
+                    maximum: 1.0
+                    description: Confidence score of speech recognition
+                  plan_id:
+                    type: string
+                    description: ID of the generated cognitive plan
+        '400':
+          description: Invalid request
+        '500':
+          description: Internal server error
+
+  /api/planning/generate:
+    post:
+      summary: Generate cognitive plan
+      description: Creates a task sequence from natural language command
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - user_id
+              properties:
+                command:
+                  type: string
+                  description: Natural language command
+                user_id:
+                  type: string
+                  description: User identifier
+      responses:
+        '200':
+          description: Successfully generated cognitive plan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  plan_id:
+                    type: string
+                    description: ID of the generated cognitive plan
+                  task_sequence:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        action_type:
+                          type: string
+                          description: Type of action (navigation, manipulation, perception)
+                        parameters:
+                          type: object
+                          description: Action-specific parameters
+                  status:
+                    type: string
+                    description: Status of the plan (pending, in_progress, completed, failed)
+        '400':
+          description: Invalid request
+        '500':
+          description: Internal server error
+
+  /api/planning/{plan_id}:
+    get:
+      summary: Get cognitive plan status
+      description: Retrieve the current status of a cognitive plan
+      parameters:
+        - name: plan_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Cognitive plan details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  plan_id:
+                    type: string
+                  original_command:
+                    type: string
+                  status:
+                    type: string
+                  task_sequence:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        action_type:
+                          type: string
+                        parameters:
+                          type: object
+                        status:
+                          type: string
+                        sequence_number:
+                          type: number
+        '404':
+          description: Plan not found
+        '500':
+          description: Internal server error
+
+  /api/robot/execute:
+    post:
+      summary: Execute robot action
+      description: Send a command to the physical robot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - action_type
+                - parameters
+              properties:
+                action_type:
+                  type: string
+                  description: Type of robot action
+                parameters:
+                  type: object
+                  description: Action-specific parameters
+                plan_id:
+                  type: string
+                  description: Optional plan ID this action belongs to
+      responses:
+        '200':
+          description: Action executed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  action_id:
+                    type: string
+                    description: ID of the executed action
+                  status:
+                    type: string
+                    description: Execution status
+                  result:
+                    type: object
+                    description: Result of the action execution
+        '400':
+          description: Invalid request
+        '500':
+          description: Internal server error

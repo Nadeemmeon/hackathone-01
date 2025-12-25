@@ -1,0 +1,136 @@
+# Simulation API Contract
+
+## Purpose
+This contract defines the API endpoints for simulation management in the digital twin system. This would be used if there's a backend system for managing simulation environments, sensor data, or integration with AI systems.
+
+## Base URL
+`https://api.digital-twin-robotics.com/v1`
+
+## Endpoints
+
+### Get Simulation Environment
+```
+GET /environments/{environment-id}
+```
+
+**Description**: Retrieve configuration and state of a simulation environment.
+
+**Path Parameters**:
+- `environment-id` (string): The identifier for the simulation environment
+
+**Response**:
+```json
+{
+  "id": "gazebo-humanoid-test",
+  "name": "Humanoid Robot Testing Environment",
+  "platform": "gazebo",
+  "description": "Physics-based simulation for humanoid robot testing",
+  "physicsSettings": {
+    "gravity": -9.81,
+    "realTimeFactor": 1.0,
+    "solverType": "quick",
+    "iterations": 10
+  },
+  "robotModels": [
+    {
+      "name": "humanoid-robot-1",
+      "urdfPath": "/models/humanoid/urdf/robot.urdf",
+      "initialPosition": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 1.0
+      }
+    }
+  ],
+  "sensors": [
+    {
+      "type": "lidar",
+      "name": "front_lidar",
+      "position": {"x": 0.5, "y": 0.0, "z": 1.2}
+    }
+  ]
+}
+```
+
+### Start Simulation
+```
+POST /simulations
+```
+
+**Description**: Start a new simulation instance with specified parameters.
+
+**Request Body**:
+```json
+{
+  "environmentId": "gazebo-humanoid-test",
+  "duration": 300,
+  "realTimeFactor": 1.0,
+  "recordData": true
+}
+```
+
+**Response**:
+```json
+{
+  "simulationId": "sim-12345",
+  "status": "running",
+  "startTime": "2025-12-21T10:00:00Z",
+  "estimatedEndTime": "2025-12-21T10:05:00Z"
+}
+```
+
+### Get Sensor Data
+```
+GET /simulations/{simulation-id}/sensor-data
+```
+
+**Description**: Retrieve sensor data from a running or completed simulation.
+
+**Path Parameters**:
+- `simulation-id` (string): The identifier for the simulation
+
+**Query Parameters**:
+- `sensorType` (string, optional): Filter by sensor type (lidar, camera, imu)
+- `startTime` (string, optional): ISO 8601 timestamp for data start
+- `endTime` (string, optional): ISO 8601 timestamp for data end
+
+**Response**:
+```json
+{
+  "simulationId": "sim-12345",
+  "sensorData": [
+    {
+      "timestamp": "2025-12-21T10:01:00Z",
+      "sensorType": "lidar",
+      "sensorName": "front_lidar",
+      "data": {
+        "ranges": [1.2, 1.5, 1.3, 1.8, 2.0, 1.9],
+        "intensities": [0.8, 0.7, 0.9, 0.6, 0.5, 0.4],
+        "angleMin": -1.57,
+        "angleMax": 1.57,
+        "angleIncrement": 0.01
+      }
+    }
+  ]
+}
+```
+
+## Error Responses
+
+All endpoints return standard error responses:
+
+```json
+{
+  "error": {
+    "code": "SIMULATION_NOT_FOUND",
+    "message": "The requested simulation was not found",
+    "details": "Simulation with id 'nonexistent-sim' does not exist"
+  }
+}
+```
+
+## Authentication
+Some endpoints may require authentication using Bearer tokens in the Authorization header:
+```
+Authorization: Bearer {access-token}
+```

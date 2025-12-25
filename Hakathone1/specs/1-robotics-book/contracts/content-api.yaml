@@ -1,0 +1,126 @@
+# Content API Contract
+
+## Purpose
+This contract defines the API endpoints for managing educational content in the Physical AI & Humanoid Robotics book. This would be used if there's a backend system for content management, authoring tools, or additional interactive features.
+
+## Base URL
+`https://api.physical-ai-robotics-book.com/v1`
+
+## Endpoints
+
+### Get Module Content
+```
+GET /modules/{module-id}
+```
+
+**Description**: Retrieve all content for a specific module including all chapters.
+
+**Path Parameters**:
+- `module-id` (string): The identifier for the module (e.g., "robotic-nervous-system")
+
+**Response**:
+```json
+{
+  "id": "robotic-nervous-system",
+  "title": "The Robotic Nervous System (ROS 2)",
+  "description": "Middleware foundations for humanoid robot control",
+  "chapters": [
+    {
+      "id": "ros2-architecture-for-humanoids",
+      "title": "ROS 2 Architecture for Humanoids",
+      "content": "# ROS 2 Architecture for Humanoids\n\n...",
+      "learningObjectives": [
+        "Understand nodes, topics, services, and DDS concepts",
+        "Explain why ROS 2 is suited for physical AI systems"
+      ],
+      "duration": 45
+    }
+  ],
+  "learningObjectives": [
+    "Explain how ROS 2 functions as a robotic nervous system",
+    "Understand how AI agents interface with robot hardware"
+  ]
+}
+```
+
+### Get Chapter Content
+```
+GET /chapters/{chapter-id}
+```
+
+**Description**: Retrieve content for a specific chapter.
+
+**Path Parameters**:
+- `chapter-id` (string): The identifier for the chapter
+
+**Response**:
+```json
+{
+  "id": "python-agents-and-robot-control",
+  "title": "Python Agents and Robot Control",
+  "moduleId": "robotic-nervous-system",
+  "content": "# Python Agents and Robot Control\n\n...",
+  "learningObjectives": [
+    "Explain how AI logic connects to physical actuators",
+    "Understand agent-to-controller communication patterns"
+  ],
+  "prerequisites": [
+    "Basic understanding of ROS 2 architecture",
+    "Python programming experience"
+  ],
+  "duration": 50,
+  "relatedChapters": [
+    "ros2-architecture-for-humanoids",
+    "modeling-the-body-with-urdf"
+  ]
+}
+```
+
+### Search Content
+```
+GET /search?q={query}
+```
+
+**Description**: Search across all modules and chapters for specific content.
+
+**Query Parameters**:
+- `q` (string): Search query
+- `limit` (integer, optional): Maximum number of results (default: 10)
+
+**Response**:
+```json
+{
+  "query": "ROS 2 architecture",
+  "results": [
+    {
+      "id": "ros2-architecture-for-humanoids",
+      "title": "ROS 2 Architecture for Humanoids",
+      "moduleId": "robotic-nervous-system",
+      "moduleTitle": "The Robotic Nervous System (ROS 2)",
+      "snippet": "ROS 2 provides the communication infrastructure for humanoid robots...",
+      "relevance": 0.95
+    }
+  ],
+  "totalResults": 1
+}
+```
+
+## Error Responses
+
+All endpoints return standard error responses:
+
+```json
+{
+  "error": {
+    "code": "RESOURCE_NOT_FOUND",
+    "message": "The requested resource was not found",
+    "details": "Module with id 'nonexistent-module' does not exist"
+  }
+}
+```
+
+## Authentication
+Some endpoints may require authentication using Bearer tokens in the Authorization header:
+```
+Authorization: Bearer {access-token}
+```
